@@ -1,0 +1,50 @@
+﻿<Window x:Name="window" x:Class="atri_composite.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:atri_composite"
+        mc:Ignorable="d" Height="480" Width="640" MinWidth="640" MinHeight="480">
+    <Window.Resources>
+        <local:ObjectNotNullConverter x:Key="SelectionAvailabilityConverter"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.Resources>
+            <local:ObjectNotNullConverter x:Key="SelectionAvailabilityConverter"/>
+        </Grid.Resources>
+        <Image x:Name="img" Margin="200,10,10,10" RenderOptions.BitmapScalingMode="Fant" Source="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}"/>
+        <GroupBox HorizontalAlignment="Left" Margin="10,196,0,45.4" Width="180" Header="Face Components">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="extraConfigPanel" Margin="5"/>
+            </ScrollViewer>
+        </GroupBox>
+        <DockPanel HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="180">
+            <Label Content="Character: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="80" HorizontalContentAlignment="Right"/>
+            <ComboBox VerticalAlignment="Center" ItemsSource="{Binding Characters, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectedItem="{Binding SelectedCharacter, Mode=OneWayToSource, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectionChanged="OnSelectionChanged"/>
+        </DockPanel>
+        <DockPanel HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="180">
+            <Label Content="Pose: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="80" HorizontalContentAlignment="Right"/>
+            <ComboBox VerticalAlignment="Center" ItemsSource="{Binding SelectedCharacter.Poses, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" IsEnabled="{Binding SelectedCharacter, Converter={StaticResource SelectionAvailabilityConverter}, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectedItem="{Binding SelectedPose, Mode=OneWayToSource, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectionChanged="OnPoseSelectionChanged"/>
+        </DockPanel>
+        <DockPanel HorizontalAlignment="Left" Margin="10,165,0,0" VerticalAlignment="Top" Width="180">
+            <Label Content="Face: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="80" HorizontalContentAlignment="Right"/>
+            <ComboBox VerticalAlignment="Center" ItemsSource="{Binding SelectedPose.Presets, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" IsEnabled="{Binding SelectedPose, Converter={StaticResource SelectionAvailabilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectionChanged="OnFaceSelectionChanged"/>
+        </DockPanel>
+        <DockPanel HorizontalAlignment="Left" Margin="10,72,0,0" VerticalAlignment="Top" Width="180">
+            <Label Content="Size: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="80" HorizontalContentAlignment="Right"/>
+            <ComboBox VerticalAlignment="Center" ItemsSource="{Binding SelectedPose.Sizes, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" IsEnabled="{Binding SelectedPose, Converter={StaticResource SelectionAvailabilityConverter}, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectedItem="{Binding SelectedSize, Mode=OneWayToSource, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectionChanged="OnSelectionChanged"/>
+        </DockPanel>
+        <DockPanel HorizontalAlignment="Left" Margin="10,103,0,0" VerticalAlignment="Top" Width="180">
+            <Label Content="Dress: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="80" HorizontalContentAlignment="Right"/>
+            <ComboBox VerticalAlignment="Center" ItemsSource="{Binding SelectedPose.Dresses, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" IsEnabled="{Binding SelectedPose, Converter={StaticResource SelectionAvailabilityConverter}, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectedItem="{Binding SelectedDress, Mode=OneWayToSource, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectionChanged="OnSelectionChanged"/>
+        </DockPanel>
+        <DockPanel HorizontalAlignment="Left" Margin="10,134,0,0" VerticalAlignment="Top" Width="180">
+            <Label Content="Addition: " HorizontalAlignment="Left" VerticalAlignment="Top" Width="80" HorizontalContentAlignment="Right"/>
+            <ComboBox VerticalAlignment="Center" ItemsSource="{Binding SelectedDress.Additions, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" IsEnabled="{Binding SelectedDress, Converter={StaticResource SelectionAvailabilityConverter}, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectedItem="{Binding SelectedAddition, Mode=OneWayToSource, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" SelectionChanged="OnSelectionChanged"/>
+        </DockPanel>
+        <Button Content="Export" HorizontalAlignment="Left" Margin="10,0,0,10" Width="180" Height="24
+                " VerticalAlignment="Bottom" IsEnabled="{Binding Image, Converter={StaticResource SelectionAvailabilityConverter}, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" Click="OnExportClick"/>
+        <Label Content="{Binding ImageSize, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:MainWindow}}}" HorizontalAlignment="Right" Margin="0,0,10,5" VerticalAlignment="Bottom" Height="45" Width="424" HorizontalContentAlignment="Right" VerticalContentAlignment="Bottom" Padding="0" FontWeight="Bold" Foreground="#66000000" FontSize="24"/>
+
+    </Grid>
+</Window>
