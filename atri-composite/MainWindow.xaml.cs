@@ -171,6 +171,49 @@ namespace atri_composite
                 using (var file = File.Create(dialog.FileName)) encoder.Save(file);
             }
         }
+
+        private void OnExtraMenuClick(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            ContextMenu contextMenu = button.ContextMenu;
+            contextMenu.PlacementTarget = button;
+            contextMenu.IsOpen = true;
+            e.Handled = true;
+        }
+
+        private void OnBatchExportClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CommonOpenFileDialog()
+            {
+                Title = "Locate the target folder",
+                DefaultDirectory = Environment.CurrentDirectory,
+                IsFolderPicker = true,
+                EnsureFileExists = true,
+                EnsurePathExists = true,
+                EnsureValidNames = true
+            };
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                var limits = new BatchExporter.Limitation();
+                foreach (var p in ((sender as FrameworkElement).Tag as string ?? "").Split(',')) switch (p)
+                    {
+                        case "Character": limits.Character = SelectedCharacter; break;
+                        case "Pose": limits.Pose = SelectedPose; break;
+                        case "Size": limits.Size = SelectedSize; break;
+                        case "Dress": limits.Dress = SelectedDress; break;
+                        case "Addition": limits.Addition = SelectedAddition; break;
+                    }
+
+                var exporter = new BatchExporter(Characters, WorkingDirectory, dialog.FileName);
+                var count = exporter.EnumerateVariants(limits).Count();
+                var result = MessageBox.Show($"{count} images will be saved to {dialog.FileName}.\nThis may take a long time!\nProceed?", "Notice", MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    exporter.Run(limits);
+                    MessageBox.Show($"{count} images saved.", "Notice", MessageBoxButton.OK);
+                }
+            }
+        }
     }
 
     public class ObjectNotNullConverter : IValueConverter
@@ -178,5 +221,18 @@ namespace atri_composite
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value != null;
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+    }
+
+    public class ToStringConverter : IMultiValueConverter
+    {
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            return string.Format(parameter as string, values);
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

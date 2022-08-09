@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -73,19 +74,23 @@ namespace atri_composite
             return newBitmap;
         }
 
+        private static readonly ConcurrentDictionary<string, JArray> pbdCache = new ConcurrentDictionary<string, JArray>();
         public static JArray LoadPBDFile(string pbdPath, bool normalize = false)
         {
-            var proc = Process.Start(new ProcessStartInfo()
-            {
-                FileName = "pbd2json.exe",
-                Arguments = $"\"{pbdPath}\"",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            });
-            var json = proc.StandardOutput.ReadToEnd();
-            proc.WaitForExit();
-            return JArray.Parse(normalize ? json.Normalize(NormalizationForm.FormKC) : json);
+            return pbdCache.GetOrAdd(pbdPath, o =>
+              {
+                  var proc = Process.Start(new ProcessStartInfo()
+                  {
+                      FileName = "pbd2json.exe",
+                      Arguments = $"\"{pbdPath}\"",
+                      UseShellExecute = false,
+                      RedirectStandardOutput = true,
+                      CreateNoWindow = true
+                  });
+                  var json = proc.StandardOutput.ReadToEnd();
+                  proc.WaitForExit();
+                  return JArray.Parse(normalize ? json.Normalize(NormalizationForm.FormKC) : json);
+              });
         }
 
         [System.Runtime.InteropServices.DllImport("gdi32.dll")]
