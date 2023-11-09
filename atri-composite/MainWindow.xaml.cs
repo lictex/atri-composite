@@ -116,7 +116,15 @@ namespace atri_composite
         {
             if (SelectedCharacter != null && SelectedPose != null && SelectedDress != null && SelectedAddition != null && SelectedSize != null && SelectedFaceComponents != null && !PauseGenerate)
             {
-                var image = new CompoundImage(Path.Combine(WorkingDirectory, SelectedCharacter.Name, $"{SelectedPose.Name}_{SelectedSize}.pbd"));
+                var pbdPath = Path.Combine(WorkingDirectory, SelectedCharacter.Name, $"{SelectedPose.Name}_{SelectedSize}.pbd");
+
+                // also allow images to be placed in the data root
+                if (!File.Exists(pbdPath))
+                {
+                    pbdPath = Path.Combine(Directory.GetParent(Path.GetDirectoryName(pbdPath)).FullName, Path.GetFileName(pbdPath));
+                }
+
+                var image = new CompoundImage(pbdPath);
                 var layers = new List<string>();
                 layers.Add(SelectedDress.LayerPath);
                 layers.Add(SelectedAddition.LayerPath);

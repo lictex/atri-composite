@@ -74,8 +74,8 @@ namespace atri_composite
                             // seems that ginka contains some invalid facegroup refs
                             if (v != null)
                             {
-                            items.Add(new KeyValuePair<string, Character.Pose.FaceComponent.Variant>(k, v));
-                        }
+                                items.Add(new KeyValuePair<string, Character.Pose.FaceComponent.Variant>(k, v));
+                            }
                             else
                             {
                                 System.Diagnostics.Trace.TraceWarning($"unknown facegroup: {k}");
@@ -89,10 +89,26 @@ namespace atri_composite
             return pose;
         }
 
-        private static List<string> GetSizes(string dir, string name) => Directory.GetFiles(dir)
+        private static List<string> GetSizes(string dir, string name)
+        {
+            var result = new List<string>();
+            if (Directory.Exists(dir))
+            {
+                result.AddRange(Directory.GetFiles(dir)
+                    .Select(o => Path.GetFileName(o))
+                    .Where(o => Regex.IsMatch(o, $@"{name}_[a-zA-Z0-9]+.pbd$"))
+                    .Select(o => o.Substring(name.Length + 1, o.Length - name.Length - 5))
+                );
+            }
+
+            // also allow images to be placed in the data root
+            result.AddRange(Directory.GetFiles(Directory.GetParent(dir).FullName)
                 .Select(o => Path.GetFileName(o))
                 .Where(o => Regex.IsMatch(o, $@"{name}_[a-zA-Z0-9]+.pbd$"))
                 .Select(o => o.Substring(name.Length + 1, o.Length - name.Length - 5))
-                .ToList();
+            );
+
+            return result;
+        }
     }
 }

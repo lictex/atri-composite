@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -77,6 +78,12 @@ namespace atri_composite
         private static readonly ConcurrentDictionary<string, JArray> pbdCache = new ConcurrentDictionary<string, JArray>();
         public static JArray LoadPBDFile(string pbdPath, bool normalize = false)
         {
+            // also allow stands to be placed in the data root
+            if (!File.Exists(pbdPath))
+            {
+                pbdPath = Path.Combine(Directory.GetParent(Path.GetDirectoryName(pbdPath)).FullName, Path.GetFileName(pbdPath));
+            }
+
             return pbdCache.GetOrAdd(pbdPath, o =>
               {
                   var proc = Process.Start(new ProcessStartInfo()

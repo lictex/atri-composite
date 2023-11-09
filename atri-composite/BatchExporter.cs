@@ -35,7 +35,15 @@ namespace atri_composite
             EnumerateVariants(limit).AsParallel().WithDegreeOfParallelism(Environment.ProcessorCount * 4).ForAll(_ =>
             {
                 var (character, pose, dress, size, preset, addition) = _;
-                var image = new CompoundImage(Path.Combine(WorkingDirectory, character.Name, $"{pose.Name}_{size}.pbd"));
+                var pbdPath = Path.Combine(WorkingDirectory, character.Name, $"{pose.Name}_{size}.pbd");
+
+                // also allow images to be placed in the data root
+                if (!File.Exists(pbdPath))
+                {
+                    pbdPath = Path.Combine(Directory.GetParent(Path.GetDirectoryName(pbdPath)).FullName, Path.GetFileName(pbdPath));
+                }
+
+                var image = new CompoundImage(pbdPath);
                 var layers = new List<string>();
                 layers.Add(dress.LayerPath);
                 layers.Add(addition.LayerPath);
