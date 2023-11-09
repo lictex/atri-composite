@@ -33,7 +33,15 @@ namespace atri_composite
             for (i++; i < jArr.Count; i++)
             {
                 Layer item = jArr[i].ToObject<Layer>();
-                item.Path = imagePrefix + item.LayerID + ".png";
+                item.Path = imagePrefix + item.LayerID;
+                if (File.Exists(item.Path + ".png"))
+                {
+                    item.Path = imagePrefix + item.LayerID + ".png";
+                }
+                else
+                {
+                    item.Path = imagePrefix + item.LayerID + ".tlg";
+                }
                 flatLayers.Add(item);
             }
 
@@ -66,9 +74,21 @@ namespace atri_composite
                 if (layer == null) throw new ArgumentException();
                 if (layer.Type != KrBlendMode.ltPsNormal) throw new NotSupportedException();
 
-                using (var layerBitmap = new Bitmap(layer.Path))
+                Bitmap layerBitmap;
+                FreeMote.Tlg.TlgLoader tlgLoader = null;
+                if (layer.Path.EndsWith(".png"))
+                {
+                    layerBitmap = new Bitmap(layer.Path);
+                }
+                else
+                {
+                    tlgLoader = new FreeMote.Tlg.TlgLoader(File.ReadAllBytes(layer.Path));
+                    layerBitmap = tlgLoader.Bitmap;
+                }
                 using (var g = Graphics.FromImage(bitmap))
                     g.DrawImage(layerBitmap, layer.Left, layer.Top, layer.Width, layer.Height);
+                layerBitmap.Dispose();
+                tlgLoader?.Dispose();
             }
             return bitmap;
         }

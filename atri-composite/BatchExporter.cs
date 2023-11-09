@@ -30,9 +30,9 @@ namespace atri_composite
             TargetDirectory = targetDirectory;
         }
 
-        public void Run(Limitation limit)
+        public int Run(Limitation limit)
         {
-            EnumerateVariants(limit).AsParallel().WithDegreeOfParallelism(Environment.ProcessorCount * 4).ForAll(_ =>
+            var errors = EnumerateVariants(limit).AsParallel().WithDegreeOfParallelism(Environment.ProcessorCount * 4).Select(_ =>
             {
                 var (character, pose, dress, size, preset, addition) = _;
                 var pbdPath = Path.Combine(WorkingDirectory, character.Name, $"{pose.Name}_{size}.pbd");
@@ -49,13 +49,30 @@ namespace atri_composite
                 layers.Add(addition.LayerPath);
                 layers.AddRange(preset.Items.Reverse().Select(o => o.Value.LayerPath));
 
-                var result = image.Generate(layers.ToArray()).Crop(true).ToBitmapSource(true);
+                BitmapSource result;
+                try
+                {
+                    result = image.Generate(layers.ToArray()).Crop(true).ToBitmapSource(true);
+                }
+                catch (Exception e)
+                {
+                    return $"{character}_{pose}_{dress}_{size}_{preset}_{addition}: {e.Message}";
+                }
 
                 var encoder = new PngBitmapEncoder();
                 encoder.Frames.Add(BitmapFrame.Create(result));
                 using (var file = File.Create(Path.Combine(TargetDirectory, $"{character}_{pose}_{size}_{dress}_{addition}_{preset}.png")))
                     encoder.Save(file);
-            });
+                return null;
+            }).Where(o => o != null).ToList();
+
+            if (errors.Count > 0)
+            {
+                using (var file = File.CreateText(Path.Combine(TargetDirectory, $"failed.log")))
+                    errors.ForEach(o => file.WriteLine(o));
+            }
+
+            return errors.Count;
         }
 
         public IEnumerable<(Character, Character.Pose, Character.Pose.Dress, string, Character.Pose.Preset, Character.Pose.Dress.Addition)> EnumerateVariants(Limitation limit) =>

@@ -130,7 +130,16 @@ namespace atri_composite
                 layers.Add(SelectedAddition.LayerPath);
                 layers.AddRange(SelectedFaceComponents.Reverse().Select(o => o.LayerPath));
 
-                Image = image.Generate(layers.ToArray()).Crop(true).ToBitmapSource(true);
+                try
+                {
+                    Image = image.Generate(layers.ToArray()).Crop(true).ToBitmapSource(true);
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.Message);
+                    System.Diagnostics.Trace.TraceError(e.Message);
+                    Image = null;
+                }
             }
             else Image = null;
         }
@@ -217,8 +226,8 @@ namespace atri_composite
                 var result = MessageBox.Show($"{count} images will be saved to {dialog.FileName}.\nThis may take a long time!\nProceed?", "Notice", MessageBoxButton.YesNo);
                 if (result == MessageBoxResult.Yes)
                 {
-                    exporter.Run(limits);
-                    MessageBox.Show($"{count} images saved.", "Notice", MessageBoxButton.OK);
+                    var errors = exporter.Run(limits);
+                    MessageBox.Show($"{count - errors} images saved. {errors} failed.", "Notice", MessageBoxButton.OK);
                 }
             }
         }
