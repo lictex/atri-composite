@@ -69,9 +69,17 @@ namespace atri_composite
                         var items = new List<KeyValuePair<string, Character.Pose.FaceComponent.Variant>>();
                         do
                         {
-                            var k = blocks[paramIndex++];
-                            var v = pose.FaceComponents.First(p => k.StartsWith(p.Name)).Variants.First(p => p.Name == k);
+                            var k = blocks[paramIndex++]; var v = pose.FaceComponents.FirstOrDefault(p => k.StartsWith(p.Name))?.Variants.FirstOrDefault(p => p.Name == k);
+
+                            // seems that ginka contains some invalid facegroup refs
+                            if (v != null)
+                            {
                             items.Add(new KeyValuePair<string, Character.Pose.FaceComponent.Variant>(k, v));
+                        }
+                            else
+                            {
+                                System.Diagnostics.Trace.TraceWarning($"unknown facegroup: {k}");
+                            }
                         }
                         while (paramIndex < blocks.Count);
                         pose.Presets.Add(new Character.Pose.Preset() { Name = fgalias, Items = items.ToArray() });
